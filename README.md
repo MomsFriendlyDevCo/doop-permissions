@@ -1,4 +1,4 @@
-@doop/service-{{FIXME}}
+@doop/permissions
 ==================
 
-A {{FIXME}} service for the [Doop framework](https://github.com/MomsFriendlyDevCo/Doop).
+A permissions service for the [Doop framework](https://github.com/MomsFriendlyDevCo/Doop).
