@@ -16,6 +16,8 @@
   },
   "homepage": "https://github.com/MomsFriendlyDevCo/doop-permissions#readme",
   "dependencies": {
-    "@doop/debug": "^1.0.4"
+    "@doop/debug": "^1.0.4",
+    "lodash": "^4.17.21",
+    "sift": "^15.1.3"
   }
 }
