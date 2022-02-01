@@ -1,5 +1,8 @@
 <script lang="js" frontend>
-// TODO: Import debug
+import Debug from '@doop/debug';
+
+// TODO: Expose a property to enable/disable debugging from project level
+var debug = Debug('v-permissions').enable(false);
 
 /**
 * Check permissions and remove element if not allowed.
@@ -27,9 +30,8 @@ app.directive('v-permissions', {
 		};
 
 		var $el = $(el);
-		var $debug = app.service.$debug.new('v-permissions').enable(false);
 		var $session = app.service.$session;
-		$debug(permission, binding.arg, $session.hasPermission(permission));
+		debug(permission, binding.arg, $session.hasPermission(permission));
 		if (binding.arg === 'any' && !$session.hasPermission.any(permission)) return removeEl();
 		if (!$session.hasPermission(permission)) return removeEl();
 	},

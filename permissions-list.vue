@@ -171,9 +171,6 @@ app.component('permissionsList', {
 			}
 		},
 	},
-	created() {
-		this.$debug.enable(false);
-	},
 });
 </script>
 
