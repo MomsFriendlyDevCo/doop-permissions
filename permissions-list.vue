@@ -33,6 +33,8 @@ app.component('permissionsList', {
 				: '.'
 			, 'i')
 
+			// TODO: Add a mock hidden permission for each group. Making it unique for "every" test which determines selection
+
 			return Object.keys(this.spec)
 				.filter(k => k.startsWith(this.$props.specPrefix)) // Matches prefix
 				.map(k => ({
@@ -40,6 +42,7 @@ app.component('permissionsList', {
 					key: k.substr(this.$props.specPrefix.length),
 					title: _.startCase(k.substr(this.$props.specPrefix.length))
 						.split(' ')
+						// TODO: Use html encoded &gt;, in replace below also
 						.map(word => `${word} >`)
 						.join(' ')
 						.replace(/ >$/, ''),
