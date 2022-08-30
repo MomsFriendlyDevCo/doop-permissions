@@ -2,11 +2,18 @@
 /**
 * Display a permission setting UI
 * The current permissions are specified with `selected` and their spec available with `spec`
+*
+* The spec is derrived from the Mongoosy/ReST //meta adapter and reads the `permission` subtree
+* The following meta fields are also supported:
+* 	- `permissionGroups: Array<string>` The groups this permission belongs to
+* 	- `permissionDescription: String` Additional help for the permission
+*
 * @param {Object} selected The currently selected permissions
 * @param {Object} spec The specification (retrieved via /api/widgets/meta)
 * @param {string} [specPerfix=""] How to filter the flat `spec` object to the permissions list
-* @param {boolean} searchable Enable search feature
+* @param {boolean} [searchable=true] Enable search feature
 * @emits change Event emitted as `(permissions)` when the user changes the permissions
+* @emits changeGroup Event emitted as `(newGroups)` when the user group membership changes OR on first calculate
 */
 app.component('permissionsList', {
 	data() { return {
@@ -28,27 +35,31 @@ app.component('permissionsList', {
 		* @property {boolean} show Whether the permission matches the search query
 		*/
 		permissions() {
-			var searchRe = new RegExp(this.searchValue // Prepare search string by splitting words into OR groups
+			let searchRe = new RegExp(this.searchValue // Prepare search string by splitting words into OR groups
 				? this.searchValue.split(/\s+/).map(RegExp.escape).join('|')
 				: '.'
 			, 'i')
 
-			// TODO: Add a mock hidden permission for each group. Making it unique for "every" test which determines selection
+			let prefixReplace = new RegExp('^' + RegExp.escape(this.specPrefix));
 
-			return Object.keys(this.spec)
-				.filter(k => k.startsWith(this.$props.specPrefix)) // Matches prefix
+			let out = Object.keys(this.spec)
+				.filter(k => prefixReplace.test(k)) // Matches prefix
 				.map(k => ({
 					...this.spec[k],
-					key: k.substr(this.$props.specPrefix.length),
-					title: _.startCase(k.substr(this.$props.specPrefix.length))
+					key: k.replace(prefixReplace, ''),
+					title: _.startCase(k.replace(prefixReplace, ''))
 						.split(' ')
 						// TODO: Use html encoded &gt;, in replace below also
 						.map(word => `${word} >`)
 						.join(' ')
 						.replace(/ >$/, ''),
-					selected: this.selected[k.substr(this.$props.specPrefix.length)],
+					selected: this.selected[k.replace(prefixReplace, '')],
+					selectedFrom: k.replace(prefixReplace, ''),
 					show: searchRe.test(k),
 				}))
+
+			console.debug('PERMS', out);
+			return out;
 		},
 
 
@@ -71,7 +82,7 @@ app.component('permissionsList', {
 		* @property {boolean} show Whether the permission matches the search query
 		*/
 		permissionGroups() {
-			var searchRe = new RegExp(this.searchValue // Prepare search string by splitting words into OR groups
+			let searchRe = new RegExp(this.searchValue // Prepare search string by splitting words into OR groups
 				? this.searchValue.split(/\s+/).map(RegExp.escape).join('|')
 				: '.'
 			, 'i')
@@ -95,6 +106,7 @@ app.component('permissionsList', {
 				}, {})
 				.map(permissionGroup => _.set(permissionGroup, 'selected', permissionGroup.permissions.every(p => this.permissionsByKey[p].selected)))
 				.sortBy('title')
+				.tap(v => this.$emit('changeGroups', v))
 				.value()
 		},
 	},
@@ -121,8 +133,8 @@ app.component('permissionsList', {
 		* @emits changeGroup Emitted as (permissionGroupName)
 		*/
 		togglePermissionGroup(key, newValue) {
-			var group = this.permissionGroups.find(pg => pg.key == key);
-			var groupValue = newValue ?? !group.selected;
+			let group = this.permissionGroups.find(pg => pg.key == key);
+			let groupValue = newValue ?? !group.selected;
 
 			this.$emit('change', _(this.permissions)
 				.mapKeys(p => p.key)
@@ -179,10 +191,10 @@ app.component('permissionsList', {
 
 <template>
 	<div>
-		<ul class="nav nav-tabs">
+		<ul class="nav nav-tabs" role="tablist">
 			<li class="nav-item">
-				<a @click="focusSearch" class="nav-link active" data-toggle="tab" :data-target="`#$permissions-${_uid}-roles`">
-					Basic roles
+				<a @click="focusSearch" class="nav-link active" data-toggle="tab" :data-target="`#permissions-${_uid}-roles`">
+					Group Membership
 					<span class="badge badge-info">
 						{{this.permissionGroups.filter(pg => pg.selected).length | number}}
 						/
@@ -192,7 +204,7 @@ app.component('permissionsList', {
 			</li>
 			<li class="nav-item">
 				<a @click="focusSearch" class="nav-link" data-toggle="tab" :data-target="`#permissions-${_uid}-permissions`">
-					Custom permissions
+					Individual permissions
 					<span class="badge badge-info">
 						{{this.permissions.filter(p => p.selected).length | number}}
 						/
@@ -211,15 +223,15 @@ app.component('permissionsList', {
 				</div>
 			</li>
 		</ul>
-		<div class="row">
-			<div v-if="searchable" class="col-12 mt-2">
+		<div v-if="searchable" class="row">
+			<div class="col-12 mt-2">
 				<input ref="searchBox" v-model="searchValue" type="search" class="form-control" placeholder="Search permissions..."/>
 			</div>
 		</div>
 		<div class="tab-content">
 			<div class="tab-pane fade show active" :id="`permissions-${_uid}-roles`" role="tabpanel">
 				<div v-for="permissionGroup in permissionGroups" :key="permissionGroup.key" class="form-group row m-b-0">
-					<div v-show="permissionGroup.show" class="col-11 col-form-label">
+					<div v-show="permissionGroup.show" class="col-11 col-form-label" v-tooltip="permissionGroup.permissionDescription">
 						<v-toggle
 							:value="permissionGroup.selected"
 							:sync="true"
