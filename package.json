@@ -1,6 +1,6 @@
 {
   "name": "@doop/permissions",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A permissions service for the Doop framework",
   "repository": {
     "type": "git",
