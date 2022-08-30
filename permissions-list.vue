@@ -42,7 +42,7 @@ app.component('permissionsList', {
 
 			let prefixReplace = new RegExp('^' + RegExp.escape(this.specPrefix));
 
-			let out = Object.keys(this.spec)
+			return Object.keys(this.spec)
 				.filter(k => prefixReplace.test(k)) // Matches prefix
 				.map(k => ({
 					...this.spec[k],
@@ -57,9 +57,6 @@ app.component('permissionsList', {
 					selectedFrom: k.replace(prefixReplace, ''),
 					show: searchRe.test(k),
 				}))
-
-			console.debug('PERMS', out);
-			return out;
 		},
 
 
