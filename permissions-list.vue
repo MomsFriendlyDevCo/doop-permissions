@@ -181,7 +181,7 @@ app.component('permissionsList', {
 	<div>
 		<ul class="nav nav-tabs">
 			<li class="nav-item">
-				<a @click="focusSearch" class="nav-link active" data-toggle="tab" data-target="#permissions-roles">
+				<a @click="focusSearch" class="nav-link active" data-toggle="tab" :data-target="`#$permissions-${_uid}-roles`">
 					Basic roles
 					<span class="badge badge-info">
 						{{this.permissionGroups.filter(pg => pg.selected).length | number}}
@@ -191,7 +191,7 @@ app.component('permissionsList', {
 				</a>
 			</li>
 			<li class="nav-item">
-				<a @click="focusSearch" class="nav-link" data-toggle="tab" data-target="#permissions-permissions">
+				<a @click="focusSearch" class="nav-link" data-toggle="tab" :data-target="`#permissions-${_uid}-permissions`">
 					Custom permissions
 					<span class="badge badge-info">
 						{{this.permissions.filter(p => p.selected).length | number}}
@@ -217,7 +217,7 @@ app.component('permissionsList', {
 			</div>
 		</div>
 		<div class="tab-content">
-			<div class="tab-pane fade show active" id="permissions-roles" role="tabpanel">
+			<div class="tab-pane fade show active" :id="`permissions-${_uid}-roles`" role="tabpanel">
 				<div v-for="permissionGroup in permissionGroups" :key="permissionGroup.key" class="form-group row m-b-0">
 					<div v-show="permissionGroup.show" class="col-11 col-form-label">
 						<v-toggle
@@ -235,7 +235,7 @@ app.component('permissionsList', {
 					No matching permission groups
 				</div>
 			</div>
-			<div class="tab-pane fade show" id="permissions-permissions" role="tabpanel">
+			<div class="tab-pane fade show" :id="`permissions-${_uid}-permissions`" role="tabpanel">
 				<div v-for="permission in permissions" :key="permission.key" class="form-group row m-b-0">
 					<div v-show="permission.show" class="col-11 col-form-label">
 						<v-toggle
